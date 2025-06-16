@@ -2,7 +2,6 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "fastapi[standard]",
-#     "openai",
 #     "uvicorn[standard]",
 #     "requests",
 #     "markdownify",
@@ -22,15 +21,8 @@ from fastapi import HTTPException
 from enum import Enum
 
 
-from openai import OpenAI
-
-
 OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
 MODEL = "deepseek/deepseek-r1-0528"
-OPENAI_CLIENT = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-)
 APP = FastAPI(title="Note Classifier", version="0.1.0")
 
 
