@@ -1,0 +1,65 @@
+# Configuration for Gemma 3 12B model training (distill_finetuning pipeline)
+# Optimized hyperparameters for the larger 12B model
+
+# Pipeline-level configuration
+enable_cache: true
+
+# Pipeline parameters
+parameters:
+  model_size: "12b"  # Options: "1b", "4b", or "12b"
+  filter_none_labels: true  # Filter out NONE examples from training
+  max_samples: null  # Use all available samples (null = no limit)
+
+# Step-specific configuration
+steps:
+  # Data loading step
+  load_data:
+    enable_cache: true
+    parameters:
+      model_size: "12b"
+      dataset_id: "zenml/cuad-deepseek"
+      output_dir: "data/processed_cuad/hf_dataset"
+      max_samples: null
+      tokenize: false  # Tokenization happens during training
+      filter_none_labels: true
+  
+  # Model fine-tuning step with 12B-optimized hyperparameters
+  finetune_model:
+    enable_cache: false  # Always retrain
+    parameters:
+      model_size: "12b"
+      lora_rank: 16  # Increased rank for 12B model (default is 8)
+      lora_alpha: 32  # Following alpha = 2 * rank convention
+    
+    # Training configuration optimized for 12B model
+    extra:
+      training_config:
+        # Training epochs and learning rate
+        num_train_epochs: 2  # Fewer epochs needed for larger model
+        learning_rate: 0.0001  # Lower LR for larger model (1e-4)
+        
+        # Batch size and accumulation
+        per_device_train_batch_size: 1  # Reduced batch size due to memory
+        gradient_accumulation_steps: 8  # Increased to maintain effective batch size of 8
+        
+        # Optimizer and scheduler
+        optim: "adamw_8bit"
+        weight_decay: 0.01
+        lr_scheduler_type: "cosine"  # Smooth decay for larger model
+        warmup_steps: 100  # Longer warmup for stability
+        
+        # Logging and reporting
+        logging_steps: 20  # Log loss/lr every 20 steps
+        logging_first_step: true  # Log the first step
+        logging_nan_inf_filter: true  # Filter out nan/inf from logs
+        report_to: "none"  # Disable wandb/tensorboard reporting
+        
+        # Reproducibility
+        seed: 3407
+        
+        # Optional: Add these for better stability with 12B model
+        save_steps: 500  # Save checkpoint every 500 steps
+        eval_strategy: "steps"  # Evaluate during training
+        eval_steps: 500  # Evaluate every 500 steps
+        save_total_limit: 2  # Keep only 2 checkpoints
+        load_best_model_at_end: false  # Don't load best model (uses more memory)

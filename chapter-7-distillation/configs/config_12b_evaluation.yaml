@@ -1,0 +1,46 @@
+# Configuration for evaluating Gemma 3 12B model
+# Use this config for evaluation-only runs
+
+# Pipeline-level configuration
+enable_cache: false  # Disable caching for fresh evaluation runs
+
+# Pipeline parameters for evaluation_pipeline
+parameters:
+  num_samples: 100  # Number of test samples to evaluate
+  exclude_none: true  # Exclude 'NONE' labels from evaluation
+  randomize: true  # Randomize dataset before sampling
+  random_seed: 42  # Random seed for reproducible results
+  model_size: "12b"  # Model size to evaluate
+  use_local_model: true  # Use local model (false = HF Hub)
+  deepseek_max_workers: 5  # Concurrent API calls for DeepSeek
+
+# Step-specific configuration for evaluation
+steps:
+  # Test data loading
+  load_test_data:
+    enable_cache: true  # Cache test data loading
+    parameters:
+      num_samples: 100
+      exclude_none: true
+      randomize: true
+      random_seed: 42
+  
+  # Fine-tuned model evaluation
+  evaluate_model:
+    enable_cache: false  # Don't cache evaluation results
+    parameters:
+      model_size: "12b"
+      use_local_model: true
+      # If using HF Hub model, specify the repo:
+      # model_path: "zenml/deepseek-cuad-gemma-3-12b-it-bnb-4bit"
+  
+  # DeepSeek base model evaluation
+  evaluate_deepseek_base:
+    enable_cache: false
+    parameters:
+      max_workers: 5
+      verbose: false
+  
+  # Model comparison step
+  compare_models:
+    enable_cache: false
