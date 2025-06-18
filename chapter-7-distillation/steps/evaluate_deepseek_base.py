@@ -91,7 +91,7 @@ def run_inference(item: Dict) -> Tuple[Dict, Optional[str], str]:
         elif pred_label not in LEGAL_LABEL_SCHEMA:
             logger.warning(
                 f"Model predicted invalid label '{pred_label}' not in schema. "
-                f"Valid labels: {', '.join(LEGAL_LABEL_SCHEMA[:5])}..."
+                f"Valid labels: {', '.join(LEGAL_LABEL_SCHEMA)}"
             )
             # Optionally, you could set pred_label to None here to treat as parsing error
             # pred_label = None

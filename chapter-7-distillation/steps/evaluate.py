@@ -335,8 +335,7 @@ def evaluate_model(
         "test_data_path": str(TEST_DATA_PATH),
         "use_local_model": use_local_model,
         "evaluation_timestamp": datetime.now().isoformat(),
-        "excluded_none": len(test_dataset)
-        < len(evaluation_items) + (len(test_dataset) - len(evaluation_items)),
+        "excluded_none": len(test_dataset) - len(evaluation_items),
     }
 
     # Combine results with metadata

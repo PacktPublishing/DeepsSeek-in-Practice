@@ -48,9 +48,9 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--filter-none-labels",
-        action="store_true",
+        action="store_false",
         default=True,
-        help="Filter out 'NONE' classifications from training (default: True)",
+        help="Disable filtering of 'NONE' classifications from training (default: filtering enabled)",
     )
     parser.add_argument(
         "--include-none-labels",

@@ -57,11 +57,13 @@ def create_tokenizer(config: ModelConfig) -> AutoTokenizer:
     return tokenizer
 
 
-def setup_model_and_tokenizer(config: ModelConfig) -> Tuple[Any, Any]:
+def setup_model_and_tokenizer(config: ModelConfig, lora_rank: int = None, lora_alpha: int = None) -> Tuple[Any, Any]:
     """Set up model and tokenizer with LoRA adapters.
 
     Args:
         config: Model configuration
+        lora_rank: Optional custom LoRA rank (defaults to LORA_RANK constant)
+        lora_alpha: Optional custom LoRA alpha (defaults to LORA_ALPHA constant)
 
     Returns:
         Tuple of (model, tokenizer)
@@ -92,8 +94,8 @@ def setup_model_and_tokenizer(config: ModelConfig) -> Tuple[Any, Any]:
         finetune_language_layers=FINETUNE_LANGUAGE_LAYERS,
         finetune_attention_modules=FINETUNE_ATTENTION_MODULES,
         finetune_mlp_modules=FINETUNE_MLP_MODULES,
-        r=LORA_RANK,
-        lora_alpha=LORA_ALPHA,
+        r=lora_rank if lora_rank is not None else LORA_RANK,
+        lora_alpha=lora_alpha if lora_alpha is not None else LORA_ALPHA,
         lora_dropout=LORA_DROPOUT,
         bias=LORA_BIAS,
         random_state=LORA_RANDOM_STATE,
@@ -166,42 +168,8 @@ def finetune_model(
     # Get model configuration
     config = get_model_config(model_size)
 
-    # Set up model and tokenizer with custom LoRA parameters if needed
-    if lora_rank != 8 or lora_alpha != 8:
-        # If custom LoRA parameters, we need to do it manually
-        logger.info(f"Loading model {config.base_model_id} with custom LoRA parameters")
-
-        # Create tokenizer
-        tokenizer = create_tokenizer(config)
-
-        # Load model
-        model, tokenizer = FastModel.from_pretrained(
-            model_name=config.base_model_id,
-            max_seq_length=config.max_seq_length,
-            load_in_4bit=LOAD_IN_4BIT,
-            load_in_8bit=LOAD_IN_8BIT,
-            full_finetuning=FULL_FINETUNING,
-        )
-
-        # Set up the Gemma3 chat template
-        tokenizer = get_chat_template(tokenizer, chat_template="gemma-3")
-
-        # Configure LoRA adapters with custom parameters
-        model = FastModel.get_peft_model(
-            model,
-            finetune_vision_layers=FINETUNE_VISION_LAYERS,
-            finetune_language_layers=FINETUNE_LANGUAGE_LAYERS,
-            finetune_attention_modules=FINETUNE_ATTENTION_MODULES,
-            finetune_mlp_modules=FINETUNE_MLP_MODULES,
-            r=lora_rank,
-            lora_alpha=lora_alpha,
-            lora_dropout=LORA_DROPOUT,
-            bias=LORA_BIAS,
-            random_state=LORA_RANDOM_STATE,
-        )
-    else:
-        # Use default setup
-        model, tokenizer = setup_model_and_tokenizer(config)
+    # Set up model and tokenizer with LoRA parameters
+    model, tokenizer = setup_model_and_tokenizer(config, lora_rank, lora_alpha)
 
     # Prepare datasets
     train_data, val_data = prepare_training_datasets(
