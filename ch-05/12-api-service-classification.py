@@ -72,7 +72,6 @@ def classify(note: str) -> NoteCategory:
             },
         },
     )
-    logger.success(f"Got summary for website: {url}")
     data = response.json()
     note_cat_str = data["choices"][0]["message"]["content"]
     note_cat_args = json.loads(note_cat_str)

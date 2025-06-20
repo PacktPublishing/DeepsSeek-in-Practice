@@ -85,6 +85,8 @@ def summarize_website_from(url: str) -> ArticleSummary:
                     "content": PROMPT,
                 },
             ],
+            "max_tokens": 2048,
+            "temperature": 0.0,
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
