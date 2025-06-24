@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "diskcache>=5.6.3",
     "duckduckgo-search>=8.0.4",
     "httpx>=0.28.1",
     "ipykernel>=6.29.5",
