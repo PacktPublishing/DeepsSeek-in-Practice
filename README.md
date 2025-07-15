@@ -1,2 +1,2 @@
-# Deepseek-Quickstart
-DeepSeek Quickstart, published by Packt
+# Deepseek-Essentials
+DeepSeek Essentials, published by Packt
