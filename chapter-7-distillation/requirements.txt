@@ -1,0 +1,8 @@
+zenml>=0.83.0
+scikit-learn>=1.7.0
+unsloth==2025.5.3
+polars>=1.30.0
+litellm>=1.72.4
+matplotlib>=3.5.0
+seaborn>=0.12.0
+instructor
