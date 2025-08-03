@@ -17,10 +17,8 @@ This is a tutorial about building agents with DeepSeek. The goal is to give you 
    ```
    uv sync
    ```
-5. Create and activate the virtual environment:
-   ```
-   uv venv
-   ```
+5. Activate the virtual environment:
+
    - On Windows, activate the virtual environment:
      ```
      .venv\Scripts\activate
