@@ -30,4 +30,5 @@ local = [
     "transformers>=4.55.2",
     "xgrammar>=0.1.22",
     "accelerate>=1.10.0",
+    "ollama>=0.5.3",
 ]
