@@ -19,9 +19,7 @@ from utils import (
 
 load_dotenv(".envrc", override=True)
 
-assert (
-    os.environ["DEEPSEEK_API_KEY"] is not None
-), "DEEPSEEK_API_KEY is not set"
+assert os.environ["DEEPSEEK_API_KEY"] is not None, "DEEPSEEK_API_KEY is not set"
 
 
 def llm(
@@ -118,16 +116,10 @@ async def get_health_summary(
         return summary
     except ValueError as e:
         logger.error(f"Invalid date format provided: {request.date}")
-        raise HTTPException(
-            status_code=400, detail=f"Invalid date format: {e}"
-        )
+        raise HTTPException(status_code=400, detail=f"Invalid date format: {e}")
     except Exception as e:
-        logger.error(
-            f"Failed to generate health summary for {request.date}: {e}"
-        )
-        raise HTTPException(
-            status_code=500, detail=f"Error generating summary: {e}"
-        )
+        logger.error(f"Failed to generate health summary for {request.date}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating summary: {e}")
 
 
 @app.get("/health")

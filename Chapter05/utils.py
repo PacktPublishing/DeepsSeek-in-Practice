@@ -107,9 +107,7 @@ def get_garmin_client(email: str, password: str) -> Garmin:
         return garmin
     except Exception as e:
         logger.error(f"Failed to authenticate with Garmin: {e}")
-        raise HTTPException(
-            status_code=401, detail=f"Could not login to Garmin: {e}"
-        )
+        raise HTTPException(status_code=401, detail=f"Could not login to Garmin: {e}")
 
 
 # Health data functions
@@ -161,9 +159,9 @@ def get_daily_health_summary(
         rhr = summary.get("restingHeartRate")
         steps = summary.get("totalSteps")
         stress_level = summary.get("averageStressLevel")
-        body_battery_final = summary.get(
-            "bodyBatteryMostRecentValue"
-        ) or summary.get("mostRecentBodyBattery")
+        body_battery_final = summary.get("bodyBatteryMostRecentValue") or summary.get(
+            "mostRecentBodyBattery"
+        )
         exercise_minutes = (summary.get("moderateIntensityMinutes") or 0) + (
             summary.get("vigorousIntensityMinutes") or 0
         )
@@ -204,9 +202,7 @@ def detect_trend(values, pct_threshold=5):
     return (
         "up"
         if recent > earlier * (1 + pct_threshold / 100)
-        else (
-            "down" if recent < earlier * (1 - pct_threshold / 100) else "flat"
-        )
+        else ("down" if recent < earlier * (1 - pct_threshold / 100) else "flat")
     )
 
 
@@ -225,9 +221,7 @@ def build_llm_context_md(
     assert len(summary_for_today) == 1, "Expected 1 day of summary"
     today = summary_for_today[0]
 
-    metrics = [
-        key for key in today.keys() if key not in ["date", "day_of_week"]
-    ]
+    metrics = [key for key in today.keys() if key not in ["date", "day_of_week"]]
     lines = [
         f"# Daily Metrics Summary for {today['date']} ({today['day_of_week']})",
         "_Note: All comparisons use the **previous 7 days only**, excluding today._",
@@ -242,16 +236,12 @@ def build_llm_context_md(
     for metric in metrics:
         today_val = today[metric]
         past_vals = [
-            day[metric]
-            for day in summary_for_past_7_days
-            if day[metric] is not None
+            day[metric] for day in summary_for_past_7_days if day[metric] is not None
         ]
         avg_7d = sum(past_vals) / len(past_vals) if past_vals else 0
         delta_pct = ((today_val - avg_7d) / avg_7d * 100) if avg_7d else 0
         trend_dir = detect_trend(past_vals)
-        arrow = (
-            "↑" if trend_dir == "up" else ("↓" if trend_dir == "down" else "→")
-        )
+        arrow = "↑" if trend_dir == "up" else ("↓" if trend_dir == "down" else "→")
 
         lines.append(
             f"## {metric.replace('_', ' ').title()}\n"
