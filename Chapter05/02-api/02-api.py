@@ -281,7 +281,10 @@ def llm(
         base_url="https://api.deepseek.com",
     )
     response = client.chat.completions.create(
-        model=model, messages=messages, response_format=response_format, temperature=0.0
+        model=model,
+        messages=messages,
+        response_format=response_format,
+        temperature=0.0,
     )
     message = response.choices[0].message
 
