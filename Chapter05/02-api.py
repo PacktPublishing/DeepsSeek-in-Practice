@@ -19,7 +19,9 @@ from utils import (
 
 load_dotenv(".envrc", override=True)
 
-assert os.environ["DEEPSEEK_API_KEY"] is not None, "DEEPSEEK_API_KEY is not set"
+assert (
+    os.environ["DEEPSEEK_API_KEY"] is not None
+), "DEEPSEEK_API_KEY is not set"
 
 
 def llm(
@@ -90,6 +92,11 @@ def get_daily_summary(
 app = FastAPI(title="Garmin Health Summary API")
 
 
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/docs")
+
+
 # FastAPI endpoints
 @app.post("/health-summary", response_model=DailySummary)
 async def get_health_summary(
@@ -116,22 +123,13 @@ async def get_health_summary(
         return summary
     except ValueError as e:
         logger.error(f"Invalid date format provided: {request.date}")
-        raise HTTPException(status_code=400, detail=f"Invalid date format: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid date format: {e}"
+        )
     except Exception as e:
-        logger.error(f"Failed to generate health summary for {request.date}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating summary: {e}")
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint.
-
-    Returns:
-        Status dictionary indicating API health
-    """
-    return {"status": "healthy"}
-
-
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/docs")
+        logger.error(
+            f"Failed to generate health summary for {request.date}: {e}"
+        )
+        raise HTTPException(
+            status_code=500, detail=f"Error generating summary: {e}"
+        )
