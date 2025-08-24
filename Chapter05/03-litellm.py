@@ -30,17 +30,17 @@ def llm(
     return message.content, reasoning_content
 
 
-def litellm(
-    messages: list[dict], model: str, response_format: dict | None = None
-) -> tuple[str, str | None]:
+def litellm(messages: list[dict]) -> tuple[str, str | None]:
     response = completion(
-        model=model,
+        # model="deepseek/deepseek-chat", # Uses DeepSeek API
+        # model="bedrock/us.deepseek.r1-v1:0" # Uses AWS bedrock for inference
+        model="openrouter/deepseek/deepseek-r1-distill-qwen-14b",  # Uses OpenRouter for inference
         messages=messages,
-        response_format=response_format,
         temperature=0.0,
     )
     message = response.choices[0].message
 
+    # if there is reasoning content, extract it
     if hasattr(message, "reasoning_content"):
         reasoning_content = message.reasoning_content
     else:
@@ -49,14 +49,13 @@ def litellm(
     return message.content, reasoning_content
 
 
-messages = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "What is the capital of France?"},
-]
-print("=" * 10, "DeepSeek API", "=" * 10)
-result, reasoning = llm(messages, "deepseek-chat")
-print(f"===Result===\n {result}\n===Reasoning===\n {reasoning}")
+if __name__ == "__main__":
+    os.environ["OPENROUTER_API_KEY"] = "sk-...."
 
-print("=" * 10, "Litellm", "=" * 10)
-result, reasoning = litellm(messages, "deepseek/deepseek-chat")
-print(f"===Result===\n {result}\n===Reasoning===\n {reasoning}")
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What is the capital of France?"},
+    ]
+    result, reasoning = litellm(messages)
+    print(f"Result: {result}")
+    print(f"Reasoning: {reasoning}")

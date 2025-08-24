@@ -1,74 +1,78 @@
-import json
-import os
-from typing import Literal
-
+import sagemaker
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import RedirectResponse
 from garminconnect import Garmin
 from loguru import logger
-from openai import OpenAI
+from pydantic import BaseModel
 
 from utils import (
     SYSTEM_PROMPT,
     DailySummary,
-    HealthSummaryRequest,
+    HealthSummaryRequestAWS,
     get_daily_summary_prompt,
     get_garmin_client,
 )
 
 load_dotenv(".envrc", override=True)
 
-assert os.environ["DEEPSEEK_API_KEY"] is not None, "DEEPSEEK_API_KEY is not set"
+# Replace with your own endpoint name
+ENDPOINT_NAME = "DeepSeek-R1-Distill-Qwen-14B-2025-08-24-08-52-31-391-endpoint"
+
+
+def get_aws_llm(endpoint_name: str) -> sagemaker.Predictor:
+    sess = sagemaker.Session()
+
+    return sagemaker.Predictor(
+        endpoint_name=endpoint_name,
+        sagemaker_session=sess,
+        serializer=sagemaker.serializers.JSONSerializer(),
+        deserializer=sagemaker.deserializers.JSONDeserializer(),
+    )
 
 
 def llm(
-    messages: list[dict], model: str, response_format: dict | None = None
-) -> tuple[dict, str | None]:
-    """Call DeepSeek LLM API with messages.
+    messages: list[dict],
+    endpoint_name: str,
+    response_model: BaseModel,
+) -> BaseModel:
+    """Call DeepSeek AWS Sagemaker endpoint with messages."""
 
-    Args:
-        messages: List of chat messages with role and content
-        model: Model name (deepseek-chat or deepseek-reasoner)
-        response_format: Optional response format specification
+    client = get_aws_llm(endpoint_name=endpoint_name)
 
-    Returns:
-        Tuple of (parsed JSON response, reasoning content if available)
-    """
-    client = OpenAI(
-        api_key=os.environ["DEEPSEEK_API_KEY"],
-        base_url="https://api.deepseek.com",
+    response = client.predict(
+        {
+            "messages": messages,
+            "temperature": 0.01,
+            "max_tokens": 1024,
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": response_model.__name__,
+                    "schema": response_model.model_json_schema(),
+                    "strict": True,
+                },
+            },
+            "extra_body": {"guided_decoding_backend": "xgrammar"},
+        }
     )
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        response_format=response_format,
-        temperature=0.0,
+
+    return response_model.model_validate_json(
+        response["choices"][0]["message"]["reasoning_content"]
     )
-    message = response.choices[0].message
-
-    if hasattr(message, "reasoning_content"):
-        reasoning_content = message.reasoning_content
-    else:
-        reasoning_content = None
-
-    logger.info(f"LLM response generated successfully using {model}")
-    return json.loads(message.content), reasoning_content
 
 
 def get_daily_summary(
     garmin: Garmin,
     date: str,
-    model: Literal["deepseek-chat", "deepseek-reasoner"],
-    verbose: bool = False,
+    endpoint_name: str,
 ) -> DailySummary:
     """Generate AI-powered daily health summary for a specific date.
 
     Args:
         garmin: Authenticated Garmin client instance
         date: Date string in YYYY-MM-DD format
-        model: AI model to use for analysis
-        verbose: Whether to print detailed output (default: False)
+        endpoint_name: AWS Sagemaker endpoint name
 
     Returns:
         Daily health summary with insights and recommendations
@@ -80,11 +84,10 @@ def get_daily_summary(
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
     ]
-    response, reasoning = llm(messages, model, {"type": "json_object"})
-    health_summary = DailySummary.model_validate(response)
+    response = llm(messages, endpoint_name, response_model=DailySummary)
 
     logger.info(f"Daily summary generated successfully for {date}")
-    return health_summary
+    return response
 
 
 app = FastAPI(title="Garmin Health Summary API")
@@ -98,7 +101,7 @@ async def root():
 # FastAPI endpoints
 @app.post("/health-summary", response_model=DailySummary)
 async def get_health_summary(
-    request: HealthSummaryRequest,
+    request: HealthSummaryRequestAWS,
     garmin_email: str = Header(..., description="Garmin email address"),
     garmin_password: str = Header(..., description="Garmin password"),
 ) -> DailySummary:
@@ -114,7 +117,7 @@ async def get_health_summary(
     """
     try:
         garmin = get_garmin_client(garmin_email, garmin_password)
-        summary = get_daily_summary(garmin, request.date, request.model)
+        summary = get_daily_summary(garmin, request.date, ENDPOINT_NAME)
         logger.info(
             f"Health summary API request completed successfully for {request.date}"
         )
@@ -135,5 +138,9 @@ if __name__ == "__main__":
         email=os.environ["GARMIN_EMAIL"],
         password=os.environ["GARMIN_PASSWORD"],
     )
-    summary = get_daily_summary(garmin, "2025-08-20", "deepseek-chat")
+    summary = get_daily_summary(
+        garmin,
+        "2025-08-24",
+        endpoint_name=ENDPOINT_NAME,
+    )
     pprint(summary)

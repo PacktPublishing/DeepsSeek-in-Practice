@@ -62,5 +62,5 @@ if __name__ == "__main__":
         email=os.environ["GARMIN_EMAIL"],
         password=os.environ["GARMIN_PASSWORD"],
     )
-    summary = get_daily_summary(garmin, "2025-08-14")
+    summary = get_daily_summary(garmin, "2025-08-20")
     print(summary)

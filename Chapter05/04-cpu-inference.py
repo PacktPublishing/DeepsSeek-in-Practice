@@ -1,9 +1,9 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
 
 model_name = "unsloth/DeepSeek-R1-Distill-Qwen-1.5B"
-device = "mps"
+device = "cpu"
 question = "What is the capital of Le Marche, Italy?"
-max_tokens = 1200
+max_tokens = 2500
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
@@ -19,5 +19,9 @@ inputs = tokenizer.apply_chat_template(
     return_tensors="pt",
 ).to(model.device)
 
-outputs = model.generate(**inputs, max_new_tokens=max_tokens)
-print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1] :]))
+streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=False)
+model.generate(
+    **inputs,
+    max_new_tokens=max_tokens,
+    streamer=streamer,
+)

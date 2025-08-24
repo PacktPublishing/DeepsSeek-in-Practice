@@ -10,7 +10,7 @@ from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from utils import (
     SYSTEM_PROMPT,
     DailySummary,
-    HealthSummaryRequest,
+    HealthSummaryRequestCPU,
     get_daily_summary_prompt,
     get_garmin_client,
 )
@@ -36,9 +36,10 @@ MODEL_NAME = "unsloth/DeepSeek-R1-Distill-Qwen-1.5B"
 MODEL = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     torch_dtype=torch.float32,
-    device_map=get_device(
-        force_cpu=True
-    ),  # you can set force_cpu=False to use GPU or MPS on mac
+    device_map="cpu",
+    # device_map=get_device(
+    #     force_cpu=True
+    # ),  # you can set force_cpu=False to use GPU or MPS on mac
 )
 TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)
 CONFIG = AutoConfig.from_pretrained(MODEL_NAME)
@@ -96,10 +97,15 @@ def get_daily_summary(
 app = FastAPI(title="Garmin Health Summary API")
 
 
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/docs")
+
+
 # FastAPI endpoints
 @app.post("/health-summary", response_model=DailySummary)
 async def get_health_summary(
-    request: HealthSummaryRequest,
+    request: HealthSummaryRequestCPU,
     garmin_email: str = Header(..., description="Garmin email address"),
     garmin_password: str = Header(..., description="Garmin password"),
 ) -> DailySummary:
@@ -117,7 +123,7 @@ async def get_health_summary(
         garmin = get_garmin_client(garmin_email, garmin_password)
         summary = get_daily_summary(garmin, request.date)
         logger.info(
-            f"Health summary API request completed successfully for {request.date}"  # noqa: E501
+            f"Health summary API request completed successfully for {request.date}"
         )
         return summary
     except ValueError as e:
@@ -128,16 +134,13 @@ async def get_health_summary(
         raise HTTPException(status_code=500, detail=f"Error generating summary: {e}")
 
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint.
+if __name__ == "__main__":
+    import os
+    from pprint import pprint
 
-    Returns:
-        Status dictionary indicating API health
-    """
-    return {"status": "healthy"}
-
-
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/docs")
+    garmin = get_garmin_client(
+        email=os.environ["GARMIN_EMAIL"],
+        password=os.environ["GARMIN_PASSWORD"],
+    )
+    summary = get_daily_summary(garmin, "2025-08-20")
+    pprint(summary)
