@@ -2,11 +2,29 @@
 
 This chapter demonstrates how to build applications using DeepSeek models through various interfaces and frameworks.
 
+## Installation
+
+Install dependencies using uv:
+
+```bash
+uv sync
+```
+
+## File Overview
+
+| File | Description |
+|------|-------------|
+| `01-initial-prototype.ipynb` | Jupyter notebook developing the initial health tracking prototype with Garmin data integration |
+| `02-api.py` | FastAPI application for health summary API using DeepSeek models with structured JSON output |
+| `03-litellm.py` | Example using LiteLLM library to interface with DeepSeek models through multiple providers |
+| `04-cpu-inference.py` | Local CPU inference example using Transformers library with DeepSeek-R1-Distill models |
+| `05-api-cpu-xgrammar.py` | FastAPI application using local CPU inference with XGrammar for structured output generation |
+| `06-ollama.py` | Integration with Ollama for local DeepSeek model inference and health data analysis |
+| `07-api-deepseek-sagemaker.py` | FastAPI application using AWS SageMaker-deployed DeepSeek models for health summaries |
+| `07-aws-deployment.ipynb` | Jupyter notebook demonstrating AWS SageMaker deployment of DeepSeek models with structured output |
+| `utils.py` | Utility functions including Garmin client setup, data processing, and Pydantic models for health data |
+
 ## Prerequisites
-
-### Install uv Package Manager
-
-Install uv following the [official documentation](https://docs.astral.sh/uv/getting-started/installation/).
 
 ### Environment Variables
 
@@ -46,6 +64,6 @@ uv run script_name.py
 
 For example:
 ```bash
-uv run 06-llama-cpp-python.py
+uv run 06-ollama.py
 ```
 

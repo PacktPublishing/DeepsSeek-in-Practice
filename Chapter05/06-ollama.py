@@ -30,8 +30,6 @@ def get_daily_summary(
     Args:
         garmin: Authenticated Garmin client instance
         date: Date string in YYYY-MM-DD format
-        model: AI model to use for analysis
-        verbose: Whether to print detailed output (default: False)
 
     Returns:
         Daily health summary with insights and recommendations

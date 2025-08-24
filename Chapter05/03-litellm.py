@@ -10,6 +10,16 @@ load_dotenv(".envrc", override=True)
 def llm(
     messages: list[dict], model: str, response_format: dict | None = None
 ) -> tuple[str, str | None]:
+    """Call DeepSeek LLM API with messages.
+
+    Args:
+        messages: List of chat messages with role and content
+        model: Model name (deepseek-chat or deepseek-reasoner)
+        response_format: Optional response format specification
+
+    Returns:
+        Tuple of (message content, reasoning content if available)
+    """
     client = OpenAI(
         api_key=os.environ["DEEPSEEK_API_KEY"],
         base_url="https://api.deepseek.com",
@@ -31,6 +41,14 @@ def llm(
 
 
 def litellm(messages: list[dict]) -> tuple[str, str | None]:
+    """Call DeepSeek model through LiteLLM providers.
+
+    Args:
+        messages: List of chat messages with role and content
+
+    Returns:
+        Tuple of (message content, reasoning content if available)
+    """
     response = completion(
         # model="deepseek/deepseek-chat", # Uses DeepSeek API
         # model="bedrock/us.deepseek.r1-v1:0" # Uses AWS bedrock for inference

@@ -21,6 +21,14 @@ ENDPOINT_NAME = "DeepSeek-R1-Distill-Qwen-14B-2025-08-24-08-52-31-391-endpoint"
 
 
 def get_aws_llm(endpoint_name: str) -> sagemaker.Predictor:
+    """Initialize AWS SageMaker predictor for model endpoint.
+
+    Args:
+        endpoint_name: Name of the SageMaker endpoint
+
+    Returns:
+        SageMaker predictor instance
+    """
     sess = sagemaker.Session()
 
     return sagemaker.Predictor(
@@ -36,7 +44,16 @@ def llm(
     endpoint_name: str,
     response_model: BaseModel,
 ) -> BaseModel:
-    """Call DeepSeek AWS Sagemaker endpoint with messages."""
+    """Call DeepSeek AWS Sagemaker endpoint with messages.
+
+    Args:
+        messages: List of chat messages with role and content
+        endpoint_name: Name of the SageMaker endpoint
+        response_model: Pydantic model for response validation
+
+    Returns:
+        Validated response model instance
+    """
 
     client = get_aws_llm(endpoint_name=endpoint_name)
 

@@ -16,7 +16,15 @@ from utils import (
 )
 
 
-def get_device(force_cpu: bool = False):
+def get_device(force_cpu: bool = False) -> str:
+    """Get the best available device for model inference.
+
+    Args:
+        force_cpu: Force use of CPU device
+
+    Returns:
+        Device string ('cpu', 'cuda', or 'mps')
+    """
     if force_cpu is True:
         device = "cpu"
         logger.warning("Forcing CPU")
@@ -56,8 +64,6 @@ def get_daily_summary(
     Args:
         garmin: Authenticated Garmin client instance
         date: Date string in YYYY-MM-DD format
-        model: AI model to use for analysis
-        verbose: Whether to print detailed output (default: False)
 
     Returns:
         Daily health summary with insights and recommendations
