@@ -1,0 +1,358 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Core infrastructure for API Gateway implementation
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  SystemName:
+    Type: String
+    Default: enterprise-api-system
+
+Globals:
+  Function:
+    Runtime: python3.9
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        STAGE: !Ref Environment
+        LOG_LEVEL: !If [IsProd, "WARN", "DEBUG"]
+
+Conditions:
+  IsProd: !Equals [!Ref Environment, "prod"]
+
+Resources:
+  # VPC Configuration
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-vpc"
+
+  # Private Subnets for Lambda VPC access
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-private-subnet-a"
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub "${SystemName}-private-subnet-b"
+
+  # Security Groups
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda functions
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/16
+
+  # API Gateway with security and throttling
+  ApiGateway:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Environment
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders: ["Content-Type", "Authorization"]
+        AllowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        AllowOrigins: !If [IsProd, ["https://app.example.com"], ["*"]]
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: !If [IsProd, 5000, 100]
+        ThrottlingRateLimit: !If [IsProd, 2000, 50]
+      Auth:
+        Authorizers:
+          LambdaAuthorizer:
+            FunctionArn: !GetAtt LambdaAuthorizer.Arn
+            EnableSimpleResponses: false
+        DefaultAuthorizer: LambdaAuthorizer
+
+  # Cognito User Pool with security settings
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${SystemName}-user-pool"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      MfaConfiguration: "ON"
+      SoftwareTokenMfaConfiguration: 
+        Enabled: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+        - Name: custom:tenant_id
+          AttributeDataType: String
+          Required: false
+          Mutable: false
+        - Name: custom:role
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub "${SystemName}-client"
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+        - USER_PASSWORD_AUTH
+
+  # DynamoDB Table for Users
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${SystemName}-users-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: tenantId
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: TenantIndex
+          KeySchema:
+            - AttributeName: tenantId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      SSESpecification:
+        SSEEnabled: true
+        KMSMasterKeyId: !Ref UserDataKMSKey
+
+  # KMS Key for encryption
+  UserDataKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for user data encryption
+      KeyPolicy:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  # Lambda Authorizer
+  LambdaAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambda_authorizer/
+      Handler: authorizer.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPool
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          AWS_REGION: !Ref AWS::Region
+
+  # User Service Lambda
+  UserServiceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./user_service/
+      Handler: user_service.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetB
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          KMS_KEY_ID: !Ref UserDataKMSKey
+      Events:
+        CreateUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ApiGateway
+            Method: POST
+            Path: /users
+        GetUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ApiGateway
+            Method: GET
+            Path: /users/{userId}
+        UpdateUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ApiGateway
+            Method: PUT
+            Path: /users/{userId}
+        DeleteUser:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ApiGateway
+            Method: DELETE
+            Path: /users/{userId}
+
+  # IAM Roles
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: LambdaExecutionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: 
+                  - !GetAtt UsersTable.Arn
+                  - !Sub "${UsersTable.Arn}/index/*"
+              - Effect: Allow
+                Action:
+                  - cognito-idp:DescribeUserPoolClient
+                  - cognito-idp:AdminGetUser
+                Resource: !GetAtt UserPool.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:DescribeKey
+                Resource: !GetAtt UserDataKMSKey.Arn
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+
+  # CloudWatch Log Groups
+  UserServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${UserServiceLambda}"
+      RetentionInDays: 14
+
+  AuthorizerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaAuthorizer}"
+      RetentionInDays: 14
+
+  # WAF Web ACL
+  WebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub "${SystemName}-waf"
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: CommonRuleSetMetric
+        - Name: RateLimitRule
+          Priority: 2
+          Statement:
+            RateBasedStatement:
+              Limit: 100
+              AggregateKeyType: IP
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RateLimitMetric
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway Endpoint
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${SystemName}-UserPoolId"
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${SystemName}-UserPoolClientId"
+  UsersTableName:
+    Description: DynamoDB Users Table Name
+    Value: !Ref UsersTable
+    Export:
+      Name: !Sub "${SystemName}-UsersTable"
+  KMSKeyId:
+    Description: KMS Key ID for encryption
+    Value: !Ref UserDataKMSKey
+    Export:
+      Name: !Sub "${SystemName}-KMSKey"
