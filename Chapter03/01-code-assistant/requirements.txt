@@ -15,7 +15,7 @@ psycopg2-binary==2.9.9  # PostgreSQL adapter
 
 # Data Validation & Serialization  
 pydantic==2.5.0
-python-multipart==0.0.6
+python-multipart==0.0.18
 
 # Security & Authentication
 python-jose[cryptography]==3.3.0
