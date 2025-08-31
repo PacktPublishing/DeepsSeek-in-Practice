@@ -28,8 +28,6 @@ MODEL_HINTS = {
     "code_plus_metadata": "deepseek-coder",
     # Complex extraction with an audit trail of the model's thinking
     "complex_reasoning": "deepseek-reasoner",
-    # Constrained JSON via Fireworks-hosted R1 (separate provider/config)
-    "constrained_json": "fireworks/deepseek-r1",
 }
 
 
@@ -153,3 +151,75 @@ The text: user's_name is Pat O’Neil; company’s_address is 221B Baker St, Lon
     )
     print("\nContact (robust to possessive naming quirks):")
     print(contact.model_dump())
+
+"""
+Reasoning (do not reuse in future turns):
+First, the user said: "Extract the date: The meeting is on March 15th". I need to extract the date information from this text.
+
+The JSON schema provided is for a DateInfo object with properties: month, day, and year. It's required to have month and day, and year can be null or an integer.
+
+From the text: "March 15th". I need to parse this.
+
+- Month: "March" – this should be a string, and it's already a month name.
+
+- Day: "15th" – this has a suffix, but I need to extract just the number. The schema specifies day as an integer between 1 and 31, so I should convert "15th" to 15.
+
+- Year: The text doesn't mention any year, so according to the schema, year should be null. The schema has "year" with anyOf integer or null, and default is null.
+
+The schema says: "year": { "anyOf": [{"type": "integer"}, {"type": "null"}], "default": null }
+
+So, for this extraction, year should be null.
+
+Now, I need to return the JSON object that matches this schema, not the schema itself.
+
+The response should be in a ```json codeblock.
+
+So, the JSON object should look something like:
+
+{
+  "month": "March",
+  "day": 15,
+  "year": null
+}
+
+Month is a string, day is an integer, year is null.
+
+I need to make sure the types are correct. Month is string, day is integer, year is null.
+
+Also, the schema has titles and descriptions, but I don't need to include those in the output JSON; I just need the data.
+
+The user said: "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA"
+
+So, I should output:
+
+```json
+{
+  "month": "March",
+  "day": 15,
+  "year": null
+}
+```
+
+But let me confirm the day: "15th" – I need to extract the numeric part. In the schema, day is an integer, so it should be 15, not "15th".
+
+Year is not present, so null.
+
+The schema allows year to be null, and it's not required, so that's fine.
+
+I think that's it.
+
+Model answer content (the final, user-facing output):
+```json
+{
+  "month": "March",
+  "day": 15,
+  "year": null
+}
+```
+
+Parsed struct:
+{'month': 'March', 'day': 15, 'year': None}
+
+Contact (robust to possessive naming quirks):
+{'user_name': 'Pat O’Neil', 'company_address': '221B Baker St, London'}
+"""
