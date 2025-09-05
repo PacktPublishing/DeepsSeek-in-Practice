@@ -95,6 +95,10 @@ def get_daily_summary(
         **model_inputs,
         max_new_tokens=MAX_NEW_TOKENS,
         logits_processor=[xgr_logits_processor],
+        do_sample=True,
+        temperature=0.01,
+        top_p=0.95,
+        top_k=50,
     )
     generated_ids = generated_ids[0][len(model_inputs.input_ids[0]) :]
     model_response = TOKENIZER.decode(generated_ids, skip_special_tokens=True)
