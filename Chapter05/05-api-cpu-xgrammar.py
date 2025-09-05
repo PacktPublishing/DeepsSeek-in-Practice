@@ -1,10 +1,11 @@
+import pickle
+from loguru import logger
 import torch
 import transformers
 import xgrammar as xgr
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import RedirectResponse
 from garminconnect import Garmin
-from loguru import logger
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
 from utils import (
@@ -44,14 +45,14 @@ MODEL_NAME = "unsloth/DeepSeek-R1-Distill-Qwen-1.5B"
 MODEL = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     torch_dtype=torch.float32,
-    device_map="cpu",
+    device_map="mps",
     # device_map=get_device(
     #     force_cpu=True
     # ),  # you can set force_cpu=False to use GPU or MPS on mac
 )
 TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)
 CONFIG = AutoConfig.from_pretrained(MODEL_NAME)
-MAX_NEW_TOKENS = 1024
+MAX_NEW_TOKENS = 2048
 transformers.set_seed(42)
 
 
@@ -69,7 +70,11 @@ def get_daily_summary(
         Daily health summary with insights and recommendations
     """
 
-    prompt = get_daily_summary_prompt(garmin, date)
+    if not garmin.username:
+        logger.warning("Using test Garmin account, loading prompt from file")
+        prompt = pickle.load(open("daily_summary_prompt.pkl", "rb"))
+    else:
+        prompt = get_daily_summary_prompt(garmin, date)
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -90,10 +95,6 @@ def get_daily_summary(
         **model_inputs,
         max_new_tokens=MAX_NEW_TOKENS,
         logits_processor=[xgr_logits_processor],
-        do_sample=True,
-        temperature=0.01,
-        top_p=0.95,
-        top_k=50,
     )
     generated_ids = generated_ids[0][len(model_inputs.input_ids[0]) :]
     model_response = TOKENIZER.decode(generated_ids, skip_special_tokens=True)

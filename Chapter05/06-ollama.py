@@ -1,9 +1,11 @@
 import os
+import pickle
 from shutil import which
 
 from dotenv import load_dotenv
 from garminconnect import Garmin
 from ollama import chat
+from loguru import logger
 
 from utils import (
     SYSTEM_PROMPT,
@@ -35,7 +37,11 @@ def get_daily_summary(
         Daily health summary with insights and recommendations
     """
 
-    prompt = get_daily_summary_prompt(garmin, date)
+    if not garmin.username:
+        logger.warning("Using test Garmin account, loading prompt from file")
+        prompt = pickle.load(open("daily_summary_prompt.pkl", "rb"))
+    else:
+        prompt = get_daily_summary_prompt(garmin, date)
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
