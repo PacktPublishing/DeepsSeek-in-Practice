@@ -45,7 +45,7 @@ MODEL_NAME = "unsloth/DeepSeek-R1-Distill-Qwen-1.5B"
 MODEL = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     torch_dtype=torch.float32,
-    device_map="mps",
+    device_map="cpu",
     # device_map=get_device(
     #     force_cpu=True
     # ),  # you can set force_cpu=False to use GPU or MPS on mac
