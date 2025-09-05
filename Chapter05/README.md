@@ -18,7 +18,8 @@ uv sync
 - **AWS Account** - Required for SageMaker examples (07-*)
 
 > [!IMPORTANT]
-> You need a Garmin Connect account. If you don't have one, set the username to test@test.com to load sample data for APIs and other functionalities.
+> You need a Garmin Connect account to run this application.
+> If you don't have one, set your `GARMIN_EMAIL=test@test.com` in `.envrc` to use sample data.
 
 ## File Overview
 
