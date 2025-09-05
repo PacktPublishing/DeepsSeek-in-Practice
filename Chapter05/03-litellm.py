@@ -68,8 +68,6 @@ def litellm(messages: list[dict]) -> tuple[str, str | None]:
 
 
 if __name__ == "__main__":
-    os.environ["OPENROUTER_API_KEY"] = "sk-...."
-
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "What is the capital of France?"},

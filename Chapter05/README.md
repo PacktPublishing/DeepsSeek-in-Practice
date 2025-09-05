@@ -17,6 +17,9 @@ uv sync
 - **[Ollama](https://ollama.com/)** - For local model inference (example 06)
 - **AWS Account** - Required for SageMaker examples (07-*)
 
+> [!IMPORTANT]
+> You need a Garmin Connect account. If you don't have one, set the username to test@test.com to load sample data for APIs and other functionalities.
+
 ## File Overview
 
 | File | Description |

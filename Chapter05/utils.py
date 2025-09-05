@@ -125,6 +125,10 @@ def get_garmin_client(email: str, password: str) -> Garmin:
         Authenticated Garmin client instance
     """
 
+    if email == "test@test.com":
+        logger.warning("Using test Garmin account, skipping actual login")
+        return Garmin(email="", password="")
+
     try:
         garmin = Garmin(email=email, password=password, is_cn=False)
         garmin.login()

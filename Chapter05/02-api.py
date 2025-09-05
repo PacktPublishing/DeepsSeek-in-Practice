@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Literal
+import pickle
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
@@ -74,7 +75,12 @@ def get_daily_summary(
         Daily health summary with insights and recommendations
     """
 
-    prompt = get_daily_summary_prompt(garmin, date)
+    if not garmin.username:
+        logger.warning("Using test Garmin account, loading prompt from file")
+
+        prompt = pickle.load(open("daily_summary_prompt.pkl", "rb"))
+    else:
+        prompt = get_daily_summary_prompt(garmin, date)
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -135,5 +141,5 @@ if __name__ == "__main__":
         email=os.environ["GARMIN_EMAIL"],
         password=os.environ["GARMIN_PASSWORD"],
     )
-    summary = get_daily_summary(garmin, "2025-08-20", "deepseek-chat")
+    summary = get_daily_summary(garmin, "2025-09-05", "deepseek-chat")
     pprint(summary)
