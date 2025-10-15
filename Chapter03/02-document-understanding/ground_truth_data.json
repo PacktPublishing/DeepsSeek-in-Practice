@@ -1,0 +1,266 @@
+{
+  "document_metadata": {
+    "company_name": "FruitStand Innovation Inc.",
+    "report_type": "Quarterly Financial Report",
+    "quarter": "Q3",
+    "year": 2024,
+    "report_date": "2024-09-30",
+    "fiscal_year": 2024,
+    "document_id": "FSI-FIN-2024-Q3-001",
+    "classification": "Internal Use Only",
+    "nasdaq_symbol": "FSTI"
+  },
+  
+  "key_financial_highlights": {
+    "total_revenue": {
+      "value": 487.3,
+      "unit": "million",
+      "yoy_change": "+23%"
+    },
+    "net_income": {
+      "value": 89.2,
+      "unit": "million",
+      "yoy_change": "+31%"
+    },
+    "operating_margin": {
+      "value": 24.8,
+      "unit": "percent",
+      "comparison": "vs 21.4% in Q3 2023"
+    },
+    "cash_and_equivalents": {
+      "value": 234.7,
+      "unit": "million"
+    },
+    "total_assets": {
+      "value": 1247.8,
+      "unit": "million"
+    }
+  },
+  
+  "balance_sheet_current_assets": {
+    "q3_2024": {
+      "cash_and_cash_equivalents": 234678,
+      "short_term_investments": 89234,
+      "accounts_receivable_net": 142567,
+      "inventory": 67890,
+      "prepaid_expenses": 23456,
+      "total_current_assets": 557825
+    },
+    "q2_2024": {
+      "cash_and_cash_equivalents": 198543,
+      "short_term_investments": 76890,
+      "accounts_receivable_net": 134289,
+      "inventory": 72345,
+      "prepaid_expenses": 21234,
+      "total_current_assets": 503301
+    },
+    "q3_2023": {
+      "cash_and_cash_equivalents": 187432,
+      "short_term_investments": 45678,
+      "accounts_receivable_net": 118945,
+      "inventory": 81234,
+      "prepaid_expenses": 19876,
+      "total_current_assets": 453165
+    }
+  },
+  
+  "balance_sheet_non_current_assets": {
+    "q3_2024": {
+      "property_plant_equipment": 345678,
+      "accumulated_depreciation": -123456,
+      "net_ppe": 222222,
+      "intangible_assets": 287654,
+      "goodwill": 145890,
+      "long_term_investments": 34567,
+      "total_non_current_assets": 690333
+    }
+  },
+  
+  "balance_sheet_totals": {
+    "q3_2024": {
+      "total_assets": 1248158
+    },
+    "q2_2024": {
+      "total_assets": 1175166
+    },
+    "q3_2023": {
+      "total_assets": 1057609
+    }
+  },
+  
+  "balance_sheet_liabilities": {
+    "q3_2024": {
+      "accounts_payable": 87654,
+      "accrued_expenses": 45678,
+      "short_term_debt": 50000,
+      "current_portion_long_term_debt": 25000,
+      "deferred_revenue": 67890,
+      "total_current_liabilities": 276222,
+      "long_term_debt": 275000,
+      "deferred_tax_liabilities": 89345,
+      "other_long_term_liabilities": 23456,
+      "total_non_current_liabilities": 387801,
+      "total_liabilities": 664023
+    }
+  },
+  
+  "balance_sheet_equity": {
+    "q3_2024": {
+      "common_stock": 425000,
+      "shares_authorized": "50M",
+      "shares_outstanding": "42.5M",
+      "additional_paid_in_capital": 67890,
+      "retained_earnings": 98765,
+      "accumulated_other_comprehensive_loss": -7520,
+      "total_shareholders_equity": 584135
+    }
+  },
+  
+  "income_statement": {
+    "q3_2024": {
+      "product_revenue": 312456,
+      "service_revenue": 174892,
+      "total_revenue": 487348,
+      "cost_of_product_revenue": 143567,
+      "cost_of_service_revenue": 76543,
+      "total_cost_of_revenue": 220110,
+      "gross_profit": 267238,
+      "gross_margin_percent": 54.8,
+      "research_and_development": 78654,
+      "sales_and_marketing": 56789,
+      "general_and_administrative": 34567,
+      "total_operating_expenses": 170010,
+      "operating_income": 97228,
+      "operating_margin_percent": 19.9,
+      "interest_income": 3456,
+      "interest_expense": -5678,
+      "other_income_expense_net": 1234,
+      "total_other_income_expense": -988,
+      "income_before_taxes": 96240,
+      "provision_for_income_taxes": 7019,
+      "net_income": 89221,
+      "basic_eps": 2.10,
+      "diluted_eps": 2.08,
+      "weighted_avg_shares_basic": 42500,
+      "weighted_avg_shares_diluted": 42885
+    },
+    "q2_2024": {
+      "total_revenue": 456197,
+      "net_income": 70761,
+      "basic_eps": 1.66,
+      "diluted_eps": 1.65
+    },
+    "q3_2023": {
+      "total_revenue": 395912,
+      "net_income": 44027,
+      "basic_eps": 1.04,
+      "diluted_eps": 1.03
+    }
+  },
+  
+  "revenue_by_geographic_region_q3_2024": [
+    {
+      "region": "North America",
+      "revenue": 243674,
+      "percent_of_total": 50.0,
+      "yoy_growth": 18.5,
+      "operating_margin": 26.3
+    },
+    {
+      "region": "Europe",
+      "revenue": 131574,
+      "percent_of_total": 27.0,
+      "yoy_growth": 31.2,
+      "operating_margin": 22.1
+    },
+    {
+      "region": "Asia Pacific",
+      "revenue": 97470,
+      "percent_of_total": 20.0,
+      "yoy_growth": 28.7,
+      "operating_margin": 19.8
+    },
+    {
+      "region": "Rest of World",
+      "revenue": 14630,
+      "percent_of_total": 3.0,
+      "yoy_growth": 15.4,
+      "operating_margin": 18.5
+    }
+  ],
+  
+  "revenue_by_product_line_q3_2024": [
+    {
+      "product_line": "Cloud Platform",
+      "revenue": 195871,
+      "percent_of_total": 40.2,
+      "yoy_growth": 35.2,
+      "gross_margin": 68.5
+    },
+    {
+      "product_line": "Enterprise Software",
+      "revenue": 146204,
+      "percent_of_total": 30.0,
+      "yoy_growth": 22.1,
+      "gross_margin": 54.3
+    },
+    {
+      "product_line": "Professional Services",
+      "revenue": 97470,
+      "percent_of_total": 20.0,
+      "yoy_growth": 16.4,
+      "gross_margin": 38.7
+    },
+    {
+      "product_line": "Hardware & IoT",
+      "revenue": 47803,
+      "percent_of_total": 9.8,
+      "yoy_growth": 8.9,
+      "gross_margin": 42.1
+    }
+  ],
+  
+  "key_performance_indicators_q3_2024": {
+    "annual_recurring_revenue": "1,842M",
+    "customer_acquisition_cost": 12500,
+    "customer_lifetime_value": 87500,
+    "clv_cac_ratio": 7.0,
+    "net_revenue_retention": 118,
+    "gross_dollar_retention": 94,
+    "monthly_active_users": "2.4M",
+    "average_revenue_per_user": 425
+  },
+  
+  "management_team": {
+    "ceo": {
+      "name": "John Smith",
+      "title": "Chief Executive Officer"
+    },
+    "cfo": {
+      "name": "Sarah Johnson",
+      "title": "Chief Financial Officer"
+    }
+  },
+  
+  "q4_2024_guidance": {
+    "total_revenue_low": 505,
+    "total_revenue_high": 520,
+    "revenue_growth_low": 18,
+    "revenue_growth_high": 22,
+    "operating_margin_low": 22,
+    "operating_margin_high": 24,
+    "diluted_eps_low": 1.95,
+    "diluted_eps_high": 2.15
+  },
+  
+  "contact_information": {
+    "email": "ir@fruitstand-innovation.com",
+    "phone": "+1 (555) 234-5678",
+    "website": "www.fruitstand-innovation.com/investor-relations"
+  },
+  
+  "total_expected_fields": 150,
+  "total_table_cells": 245,
+  "total_entities": 42
+}
+
