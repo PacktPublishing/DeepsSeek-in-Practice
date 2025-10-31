@@ -1,7 +1,7 @@
 #!/bin/bash
-# Environment setup script for Chapter 3
+# Environment setup script for Chapter 4
 
-echo "Setting up Chapter 3 development environment..."
+echo "Setting up Chapter 4 development environment..."
 
 # Create .env file if it doesn't exist
 if [ ! -f .env ]; then

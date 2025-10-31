@@ -1,4 +1,4 @@
-# AWS API Gateway Integration Guide
+# Amazon API Gateway Integration Guide
 ## Enterprise Implementation Specification v2.3
 
 **Document Classification:** Internal Technical Specification  
@@ -29,7 +29,7 @@
 
 ### Business Context
 
-Our organization is migrating from a legacy monolithic API server to a modern serverless architecture using AWS API Gateway and Lambda functions. This migration supports:
+Our organization is migrating from a legacy monolithic API server to a modern serverless architecture using Amazon API Gateway and Lambda functions. This migration supports:
 
 - **Scale Requirements**: Handle 10,000+ requests per second during peak hours
 - **Global Distribution**: Support users across 15+ geographic regions
